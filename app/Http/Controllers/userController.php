@@ -13,6 +13,19 @@ class userController extends Controller
         
         return response()->json($users);
     }
+    public function getAuthUser(Request $request){
+        $username = $request->username;
+        $employee_number = $request->password;
+        $user = User::where('employee_number',$employee_number)
+        ->where('employee_name',$username)
+        ->first();
+        if ($user) {
+            return response()->json(['authenticated' => true]);
+        }else{
+            return response()->json(['authenticated' => false]);
+        }
+
+    }
 
     
 }

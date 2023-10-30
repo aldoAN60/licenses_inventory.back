@@ -5,10 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class license extends Model
+class costCenter extends Model
 {
+    protected $table = "costCenter";
     use HasFactory;
-    protected $table = 'license';
-    protected $fillable = ['license'];
-    public $timestamps = false;
 }
