@@ -33,28 +33,14 @@ class inventoryRegistryController extends Controller
     
     public function updateRegistry(Request $request){
         $registry = $request->all();
-        $employeeCheck = User::whereIn('employee_number', [$registry['employee_number']])->first();
         $licenseCheck = License::whereIn('license', [$registry['license']])->first();
 
 
-        if(!$employeeCheck || !$licenseCheck){
-            if(!$employeeCheck){
-                $userRegistry = new User([
-                    'employee_number' => $registry['employee_number'],
-                    'employee_name' => $registry['employee_name'],
-                    'email' => $registry['email']
-                ]);
-                $userRegistry->save();
-                //return response()->json(['response' => 'usuario no existe']);
-            }
-            if(!$licenseCheck){
+        if(!$licenseCheck){
                 $licenseRegistry = new license([
                     'license' => $registry['license']
                 ]);
                 $licenseRegistry->save();
-                //return response()->json(['response' => 'licencia no existe']);
-                
-            }
             
             $this->getIDS($registry);
             return response()->json(['response' => 'Actualizacion exitosa']);
@@ -65,8 +51,8 @@ class inventoryRegistryController extends Controller
         // return response()->json($registry);
     }
     public function getIDS($registry){
-                
-
+        $this->updateUser($registry);
+        
         $subAreaId = subArea::where('sub_area_name', $registry['sub_area_name'])->first();
         $subAreaId = $subAreaId['id_sub_area'];
         $userId = User::where('employee_number', $registry['employee_number'])->first();
@@ -89,6 +75,13 @@ class inventoryRegistryController extends Controller
     
     $registro->save();
 
+    }
+    public function updateUser($registry){
+        $user = User::where('employee_number', $registry['employee_number'])->first();
+        
+        $user->employee_name = $registry['employee_name'];
+        $user->email = $registry['email'];
+        $user->save();
     }
     
 }

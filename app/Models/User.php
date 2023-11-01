@@ -32,7 +32,7 @@ protected $table = 'users';
         'password',
         'remember_token',
     ];
-
+    protected $primaryKey = 'id_user';
     /**
      * The attributes that should be cast.
      *
