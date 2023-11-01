@@ -13,75 +13,143 @@ use Illuminate\Http\Request;
 
 class inventoryRegistryController extends Controller
 {
-    public function getTotalRegistry(){
-        $totalRegistry = inventoryRegistry::count();
-        $totalActive = inventoryRegistry::where('license_status', 'active')->count();
-        $totalExpired = $totalRegistry - $totalActive;
-        $allcounts = [
-            'totalRegistry' => $totalRegistry,
-            'totalActive' => $totalActive,
-            'totalExpired' => $totalExpired
-        ];
-        
+/**
+ * Obtiene estadísticas sobre los registros en la base de datos.
+ *
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function getTotalRegistry()
+{
+    // Obtiene el total de registros en la tabla 'inventoryRegistry'.
+    $totalRegistry = inventoryRegistry::count();
 
-        return response()->json($allcounts);
+    // Obtiene el total de registros con estado 'active' en la tabla 'inventoryRegistry'.
+    $totalActive = inventoryRegistry::where('license_status', 'active')->count();
+
+    // Calcula el total de registros expirados restando el total de registros activos al total de registros.
+    $totalExpired = $totalRegistry - $totalActive;
+
+    // Prepara un arreglo asociativo con las estadísticas.
+    $allcounts = [
+        'totalRegistry' => $totalRegistry,
+        'totalActive' => $totalActive,
+        'totalExpired' => $totalExpired
+    ];
+
+    // Devuelve las estadísticas como una respuesta JSON.
+    return response()->json($allcounts);
+}
+
+/**
+ * Obtiene todos los registros de la vista 'viewRegistry'.
+ *
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function registry()
+{
+    // Obtiene todos los registros de la vista 'viewRegistry'.
+    $registry = viewRegistry::all();
+
+    // Devuelve los registros como una respuesta JSON.
+    return response()->json($registry);
+}
+
+/**
+ * Actualiza un registro o crea uno nuevo si la licencia no existe.
+ *
+ * @param \Illuminate\Http\Request $request
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function updateRegistry(Request $request)
+{
+    // Obtiene los datos del formulario de solicitud.
+    $registry = $request->all();
+
+    // Verifica si la licencia ya existe en la tabla 'License'.
+    $licenseCheck = License::whereIn('license', [$registry['license']])->first();
+
+    if (!$licenseCheck) {
+        // Si la licencia no existe, crea un nuevo registro en la tabla 'License'.
+        $licenseRegistry = new License([
+            'license' => $registry['license']
+        ]);
+        $licenseRegistry->save();
+
+        // Llama a la función 'getIDS' para procesar el registro y obtener información adicional.
+        $this->getIDS($registry);
+
+        // Devuelve una respuesta JSON indicando una actualización exitosa.
+        return response()->json(['response' => 'Actualización exitosa']);
+    } else {
+        // Si la licencia ya existe, llama a la función 'getIDS' para procesar el registro.
+        $this->getIDS($registry);
+
+        // Devuelve una respuesta JSON indicando una actualización exitosa.
+        return response()->json(['response' => 'Actualización exitosa']);
     }
-    public function registry(){
-        $registry = viewRegistry::all();
-        return response()->json($registry);
-    }
-    
-    public function updateRegistry(Request $request){
-        $registry = $request->all();
-        $licenseCheck = License::whereIn('license', [$registry['license']])->first();
+}
+/**
+ * Realiza operaciones para obtener e ingresar IDs relacionados y actualizar un registro en 'inventoryRegistry'.
+ *
+ * @param array $registry
+ * @return void
+ */
+public function getIDS($registry){
+    // Llama a la función 'updateUser' para realizar operaciones relacionadas con el usuario.
+    $this->updateUser($registry);
 
+    // Obtiene el ID de la subárea en función del nombre de la subárea proporcionado.
+    $subAreaId = subArea::where('sub_area_name', $registry['sub_area_name'])->first();
+    $subAreaId = $subAreaId['id_sub_area'];
 
-        if(!$licenseCheck){
-                $licenseRegistry = new license([
-                    'license' => $registry['license']
-                ]);
-                $licenseRegistry->save();
-            
-            $this->getIDS($registry);
-            return response()->json(['response' => 'Actualizacion exitosa']);
-        }else{
-            $this->getIDS($registry);
-            return response()->json(['response' => 'Actualizacion exitosa']);
-        }
-        // return response()->json($registry);
-    }
-    public function getIDS($registry){
-        $this->updateUser($registry);
-        
-        $subAreaId = subArea::where('sub_area_name', $registry['sub_area_name'])->first();
-        $subAreaId = $subAreaId['id_sub_area'];
-        $userId = User::where('employee_number', $registry['employee_number'])->first();
-        $userId = $userId['id_user'];
-        $CC_id = costCenter::where('CC_number', $registry['CC_number'])->first();
-        $CC_id = $CC_id['id_CC'];
-        $id_license = license::where('license', $registry['license'])->first();
-        $id_license = $id_license['id_license'];
+    // Obtiene el ID del usuario en función del número de empleado proporcionado.
+    $userId = User::where('employee_number', $registry['employee_number'])->first();
+    $userId = $userId['id_user'];
 
+    // Obtiene el ID del centro de costos en función del número de centro de costos proporcionado.
+    $CC_id = costCenter::where('CC_number', $registry['CC_number'])->first();
+    $CC_id = $CC_id['id_CC'];
 
-        $registro = inventoryRegistry::where('id_IR', $registry['id_IR'])->first();
-        
-        $registro->id_sub_area = $subAreaId;
-        $registro->id_user = $userId;
-        $registro->id_CC = $CC_id;
-        $registro->id_license = $id_license;
-        $registro->license_status = $registry['license_status'];
-        $registro->license_expiration = $registry['license_expiration'];
-        $registro->notes = $registry['notes'];
-    
+    // Obtiene el ID de la licencia en función del nombre de la licencia proporcionado.
+    $id_license = License::where('license', $registry['license'])->first();
+    $id_license = $id_license['id_license'];
+
+    // Obtiene el registro específico en 'inventoryRegistry' que se va a actualizar.
+    $registro = inventoryRegistry::where('id_IR', $registry['id_IR'])->first();
+
+    // Actualiza los campos del registro con los IDs y otros datos del formulario.
+    $registro->id_sub_area = $subAreaId;
+    $registro->id_user = $userId;
+    $registro->id_CC = $CC_id;
+    $registro->id_license = $id_license;
+    $registro->license_status = $registry['license_status'];
+    $registro->license_expiration = $registry['license_expiration'];
+    $registro->notes = $registry['notes'];
+
+    // Guarda los cambios en el registro.
     $registro->save();
+}
 
-    }
-    public function updateUser($registry){
-        $user = User::where('employee_number', $registry['employee_number'])->first();
-        
-        $user->employee_name = $registry['employee_name'];
-        $user->email = $registry['email'];
-        $user->save();
-    }
+    /**
+ * Actualiza la información de un usuario en la base de datos en función del número de empleado proporcionado.
+ *
+ * @param array $registry
+ * @return void
+ */
+public function updateUser($registry)
+{
+    // Busca un usuario en la base de datos en función del número de empleado proporcionado.
+    $user = User::where('employee_number', $registry['employee_number'])->first();
+
+    // Actualiza el nombre del empleado con el valor proporcionado en el formulario.
+    $user->employee_name = $registry['employee_name'];
+
+    // Actualiza la dirección de correo electrónico del empleado con el valor proporcionado en el formulario.
+    $user->email = $registry['email'];
+
+    // Guarda los cambios en la información del usuario en la base de datos.
+    $user->save();
+}
+
     
 }
