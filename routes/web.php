@@ -31,3 +31,4 @@ Route::get('/api/getArea',[ areaController::class,'getArea'])->name('getArea');
 route::get('/api/getSubArea',[subAreaController::class,'getSubArea'])->name('getSubArea');
 route::get('/api/getCostCenter',[CostCenterController::class, 'getCostCenter'])->name('getCostCenter');
 Route::patch('/api/updateRegistry',[inventoryRegistryController::class,'updateRegistry'])->name('updateRegistry');
+Route::post('/api/postRegistry',[inventoryRegistryController::class,'createRegistry'])->name('postRegistry');

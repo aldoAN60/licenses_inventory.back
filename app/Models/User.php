@@ -18,11 +18,10 @@ protected $table = 'users';
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
-
+        'employee_number',
+        'employee_name',
+        ];
+    protected $primaryKey = 'id_user';
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -32,7 +31,6 @@ protected $table = 'users';
         'password',
         'remember_token',
     ];
-    protected $primaryKey = 'id_user';
     /**
      * The attributes that should be cast.
      *
