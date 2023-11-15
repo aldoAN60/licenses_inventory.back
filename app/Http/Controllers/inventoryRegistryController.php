@@ -209,6 +209,12 @@ public function getIDS($registry){
     
 
 }
+public function destroyRegistry($id_IR){
+$destroyItem = inventoryRegistry::find($id_IR);
+$destroyItem->delete();
+
+return response()->json(['response' => 'elemento eliminado exitosamente']);
+}
 
     /**
  * Actualiza la información de un usuario en la base de datos en función del número de empleado proporcionado.

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\adminUserController;
 use App\Http\Controllers\areaController;
 use App\Http\Controllers\CostCenterController;
 use App\Http\Controllers\inventoryRegistryController;
@@ -26,9 +27,10 @@ Route::get('/', function () {
 Route::get('/api/usuarios',[userController::class,'index'])->name('index');
 Route::get('/api/total-Licenses', [inventoryRegistryController::class,'getTotalRegistry'])->name('totalLicenses');
 Route::get('/api/registry', [inventoryRegistryController::class,'registry'])->name('registry');
-Route::get('/api/authUser', [userController::class,'getAuthUser'])->name('AuthUser');
-Route::get('/api/getArea',[ areaController::class,'getArea'])->name('getArea');
-route::get('/api/getSubArea',[subAreaController::class,'getSubArea'])->name('getSubArea');
-route::get('/api/getCostCenter',[CostCenterController::class, 'getCostCenter'])->name('getCostCenter');
-Route::patch('/api/updateRegistry',[inventoryRegistryController::class,'updateRegistry'])->name('updateRegistry');
-Route::post('/api/postRegistry',[inventoryRegistryController::class,'createRegistry'])->name('postRegistry');
+Route::get('/api/authUser', [adminUserController::class,'getAuthUser'])->name('AuthUser');
+Route::get('/api/getArea',[ areaController::class,'getArea'])->name('get.Area');
+route::get('/api/getSubArea',[subAreaController::class,'getSubArea'])->name('get.SubArea');
+route::get('/api/getCostCenter',[CostCenterController::class, 'getCostCenter'])->name('get.CostCenter');
+Route::patch('/api/updateRegistry',[inventoryRegistryController::class,'updateRegistry'])->name('update.Registry');
+Route::post('/api/postRegistry',[inventoryRegistryController::class,'createRegistry'])->name('post.Registry');
+Route::delete('/api/deleteRegistry/{id_IR}',[inventoryRegistryController::class,'destroyRegistry'])->name('delete.registry');
